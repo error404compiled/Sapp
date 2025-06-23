@@ -23,26 +23,26 @@ def calculate_units_and_distribute_bill(
 
     shared_extra = extra_units / 3
 
-    adjusted_meter1 = meter1_units
-    adjusted_meter2 = meter2_units + shared_extra
-    adjusted_meter3 = meter3_units + shared_extra
-    adjusted_meter4 = meter4_units + shared_extra
+    adjusted_meter1 = round(meter1_units, 2)
+    adjusted_meter2 = round(meter2_units + shared_extra, 2)
+    adjusted_meter3 = round(meter3_units + shared_extra, 2)
+    adjusted_meter4 = round(meter4_units + shared_extra, 2)
 
     total_consumption = adjusted_meter1 + adjusted_meter2 + adjusted_meter3 + adjusted_meter4
 
-    meter1_bill = (adjusted_meter1 / total_consumption) * total_bill
-    meter2_bill = (adjusted_meter2 / total_consumption) * total_bill
-    meter3_bill = (adjusted_meter3 / total_consumption) * total_bill
-    meter4_bill = (adjusted_meter4 / total_consumption) * total_bill
+    meter1_bill = round((adjusted_meter1 / total_consumption) * total_bill, 2)
+    meter2_bill = round((adjusted_meter2 / total_consumption) * total_bill, 2)
+    meter3_bill = round((adjusted_meter3 / total_consumption) * total_bill, 2)
+    meter4_bill = round((adjusted_meter4 / total_consumption) * total_bill, 2)
 
     return {
-        "Sanjay Sharma's Meter": {'Units': adjusted_meter1, 'Bill Share': round(meter1_bill, 2)},
-        "G P Sharma's Meter": {'Units': adjusted_meter2, 'Bill Share': round(meter2_bill, 2)},
-        "Rajesh Kumar's Meter": {'Units': adjusted_meter3, 'Bill Share': round(meter3_bill, 2)},
-        "Mahipal Sharma's Meter": {'Units': adjusted_meter4, 'Bill Share': round(meter4_bill, 2)},
-        'Main Meter Units': main_units,
-        'Extra Consumption': extra_units,
-        'Shared Extra per Meter (2,3,4)': shared_extra
+        "Sanjay Sharma": {'Units': adjusted_meter1, 'Bill': meter1_bill},
+        "G P Sharma": {'Units': adjusted_meter2, 'Bill': meter2_bill},
+        "Rajesh Kumar": {'Units': adjusted_meter3, 'Bill': meter3_bill},
+        "Mahipal Sharma": {'Units': adjusted_meter4, 'Bill': meter4_bill},
+        'Main Meter Units': round(main_units, 2),
+        'Extra Consumption': round(extra_units, 2),
+        'Shared Extra per Meter': round(shared_extra, 2)
     }
 
 # Streamlit UI
@@ -50,7 +50,7 @@ st.set_page_config(page_title="Electricity Bill Splitter", layout="wide")
 st.title("📊 Electricity Bill Splitter")
 
 st.header("🔌 Main Meter Readings")
-col_main_prev, col_main_curr = st.columns([2, 2])
+col_main_prev, col_main_curr = st.columns(2)
 main_prev = col_main_prev.number_input("Main Meter Previous Reading", value=5000, key="main_prev")
 main_curr = col_main_curr.number_input("Main Meter Current Reading", value=6305, key="main_curr")
 
@@ -102,19 +102,14 @@ if st.button("🔍 Calculate Bill Split"):
 
         st.markdown(f"### Total Units (Main Meter): **{result['Main Meter Units']} units**")
         st.markdown(f"### Extra Consumption: **{result['Extra Consumption']} units**")
-        st.markdown(f"### Shared Extra per Meter (G P Sharma's Meter, Rajesh Kumar's Meter, Mahipal Sharma's Meter): **{round(result['Shared Extra per Meter (2,3,4)'], 2)} units**")
+        st.markdown(f"### Shared Extra per Meter: **{result['Shared Extra per Meter']} units**")
 
         st.markdown("## 📑 <u><b>Bill Split Details</b></u>", unsafe_allow_html=True)
 
-        for meter, details in result.items():
-            if isinstance(details, dict):
-                st.markdown(
-                    f"""
-                    <div style='font-size:24px; font-weight:bold; margin-bottom:20px;'>
-                        {meter}: Units = {details['Units']} | Bill Share = ₹{details['Bill Share']}
-                    </div>
-                    """, unsafe_allow_html=True
-                )
+        for person in ['Sanjay Sharma', 'G P Sharma', 'Rajesh Kumar', 'Mahipal Sharma']:
+            units = result[person]['Units']
+            bill = result[person]['Bill']
+            st.markdown(f"- **{person}**: {units} units | ₹{bill}")
 
     except ValueError as e:
         st.error(f"❌ {str(e)}")
